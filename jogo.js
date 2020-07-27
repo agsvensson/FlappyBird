@@ -1,5 +1,8 @@
 console.log('[DevSoutinho] Flappy Bird');
 
+const somHit = new Audio();
+somHit.src = './efeitos/hit.wav';
+
 const sprites = new Image();
 sprites.src = './sprites.png';
 
@@ -33,8 +36,8 @@ const planoDeFundo = {
       (planoDeFundo.x + planoDeFundo.largura), planoDeFundo.y,   // para resolver o problema da imagem que não ocupa toda a largura
       planoDeFundo.largura, planoDeFundo.altura,
     );
-  }
-}
+  },
+};
 
 // CHÃO
 const chao = {
@@ -60,35 +63,65 @@ const chao = {
       (chao.x + chao.largura), chao.y,  // para resolver o problema da imagem que não ocupa toda a largura
       chao.largura, chao.altura,   // Dentro do canvas, o tamanho da Sprite
     );
-  }
-}
+  },
+};
 
 
 // FLAPPY BIRD
-const flappyBird = {    // estrutura que representa o Flappy Bird
-  spriteX: 0,
-  spriteY: 0,
-  largura: 33,
-  altura: 24,
-  x: 10,
-  y: 50,
-  gravidade: 0.25,
-  velocidade: 0,
-  atualiza() {
-    flappyBird.velocidade = flappyBird.velocidade + flappyBird.gravidade;
-    flappyBird.y = flappyBird.y + flappyBird.velocidade; // faz ele cair
-  },
-  
-  desenha() {     // quando quiser desenhar o Flappy Bird
-    contexto.drawImage(
-      sprites,
-      flappyBird.spriteX, flappyBird.spriteY,   // Sprite X, Sprite Y
-      flappyBird.largura, flappyBird.altura,   // Tamanho do recorte na Sprite
-      flappyBird.x, flappyBird.y,  // Dentro do canvas, como quer desenhar
-      flappyBird.largura, flappyBird.altura,   // Dentro do canvas, o tamanho da Sprite
-    );
+function fazColisao(flappyBird, chao) {
+  const flappyBirdY = flappyBird.y + flappyBird.altura;
+  const chaoY = chao.y;
+
+  if (flappyBirdY >= chaoY) {
+    return true;
   }
+  return false;
 }
+
+function criaFlappyBird() {
+  const flappyBird = {    // estrutura que representa o Flappy Bird
+    spriteX: 0,
+    spriteY: 0,
+    largura: 33,
+    altura: 24,
+    x: 10,
+    y: 50,
+    pulo: 4.6,
+    pula() {
+      console.log('devo pular');
+      console.log('[antes]', flappyBird.velocidade);
+      flappyBird.velocidade = - flappyBird.pulo;
+      console.log('[depois]', flappyBird.velocidade);
+    },
+    gravidade: 0.25,
+    velocidade: 0,
+    atualiza() {
+      if (fazColisao(flappyBird, chao)) {
+        console.log('Fez colisão');
+        somHit.play();
+
+        setTimeout(() => {
+          mudaParaTela(Telas.INICIO);
+        }, 500);
+        return;
+      }
+  
+      flappyBird.velocidade = flappyBird.velocidade + flappyBird.gravidade;
+      flappyBird.y = flappyBird.y + flappyBird.velocidade; // faz ele cair
+    },
+    desenha() {     // quando quiser desenhar o Flappy Bird
+      contexto.drawImage(
+        sprites,
+        flappyBird.spriteX, flappyBird.spriteY,   // Sprite X, Sprite Y
+        flappyBird.largura, flappyBird.altura,   // Tamanho do recorte na Sprite
+        flappyBird.x, flappyBird.y,  // Dentro do canvas, como quer desenhar
+        flappyBird.largura, flappyBird.altura,   // Dentro do canvas, o tamanho da Sprite
+      );
+    } 
+  }
+  return flappyBird;
+};
+
 
 // INÍCIO
 const mensagemGetReady = {    // estrutura que representa o Flappy Bird
@@ -111,17 +144,24 @@ const mensagemGetReady = {    // estrutura que representa o Flappy Bird
 
 
 // TELAS
+
+const globais = {};
 let telaAtiva = {};
   function mudaParaTela(novaTela) {
   telaAtiva = novaTela;
+    if (telaAtiva.inicializa) {
+  telaAtiva.inicializa();
   }
-
+}
 const Telas = {
   INICIO: {     // adiciona um valor novo dentro de tela
+    inicializa() {
+     globais.flappyBird = criaFlappyBird();
+    },
     desenha() {
       planoDeFundo.desenha(); // chamar a função de desenho
       chao.desenha();
-      flappyBird.desenha();
+      globais.flappyBird.desenha();
       mensagemGetReady.desenha();
     },
     click() {
@@ -129,7 +169,7 @@ const Telas = {
     },
     atualiza() {
 
-    },
+    }
   }
 };
 
@@ -137,10 +177,13 @@ Telas.JOGO = {
   desenha() {
   planoDeFundo.desenha(); // chamar a função de desenho
   chao.desenha();
-  flappyBird.desenha();
+  globais.flappyBird.desenha();
+},
+click() {
+  globais.flappyBird.pula();
 },
   atualiza() {
-    flappyBird.atualiza();
+    globais.flappyBird.atualiza();
     }
   };
 
@@ -158,4 +201,4 @@ window.addEventListener('click', function() {
 });
 
 mudaParaTela(Telas.INICIO);
-loop(); //executa a função
+loop();
