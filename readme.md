@@ -3,8 +3,6 @@
 
 **Jogo criado com JavaScript, ensinado no YouTube do Mário Souto [[devsoutinho](https://www.youtube.com/playlist?list=PLTcmLKdIkOWmeNferJ292VYKBXydGeDej/)]!**
 
-(em andamento)
-
 <p align="center">
   <img alt="Logo do projeto" src="./start.png" />
 </p>
